@@ -1,5 +1,5 @@
 import pydantic
-
+from fastapi import File
 
 class ServiceOutput(pydantic.BaseModel):
     """Датаконтракт выхода сервиса"""

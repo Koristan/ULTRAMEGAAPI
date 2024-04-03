@@ -63,8 +63,8 @@ async def inference(image: UploadFile = File(...)) -> JSONResponse:
     image_content = await image.read()
     cv_image = np.array(Image.open(io.BytesIO(image_content)))
 
-    height = cv_image.shape[0] / 4
-    width = cv_image.shape[1] / 4
+    height = cv_image.shape[0]
+    width = cv_image.shape[1]
 
     logger.info(f"Картиночка приянята... обрабатываю...")
     try:
@@ -75,10 +75,10 @@ async def inference(image: UploadFile = File(...)) -> JSONResponse:
         for label in labels:     
             
             service_output = ServiceOutput()
-            service_output.x1 = round(float(label[1]) * width)
-            service_output.y1 = round(float(label[2]) * height)
-            service_output.x2 = round(float(label[1]) * width) + round(float(label[3]) * width)
-            service_output.y2 = round(float(label[2]) * width) + round(float(label[4]) * height)
+            service_output.x1 = label[1]
+            service_output.y1 = label[2]
+            service_output.x2 = label[3]
+            service_output.y2 = label[4]
             service_output.classe = label[0]
 
             service_output_json.append(service_output.model_dump(mode="json"))
