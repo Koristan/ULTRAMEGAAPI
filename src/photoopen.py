@@ -9,25 +9,28 @@ model = YOLO('src/best.pt')  # pretrained YOLOv8n model
 
 def get_boxes (image):
     
-    model.predict(image, conf=0.7, save=True, save_txt=True, show_labels=True)
     labels = list()
     
     results = model([image])
+    # track_ids = results[0].boxes.id
     
-    
+    # print(track_ids)
     try:
         for r in results:
             boxes = r.boxes
             names = r.names
             for box in boxes:           
-                     
-                classe = names[int(round(box.cls.item()))]
-                x1 = int(round(box.xyxy.numpy()[0][0]))
-                y1 = int(round(box.xyxy.numpy()[0][1]))
-                x2 = int(round(box.xyxy.numpy()[0][2]))
-                y2 = int(round(box.xyxy.numpy()[0][3]))
-            
-                labels.append((classe, x1, y1, x2, y2))
+                
+                acc = box.conf.item()
+                
+                if (acc > 0.7):
+                    classe = names[int(round(box.cls.item()))]
+                    x1 = int(round(box.xyxy.numpy()[0][0]))
+                    y1 = int(round(box.xyxy.numpy()[0][1]))
+                    x2 = int(round(box.xyxy.numpy()[0][2]))
+                    y2 = int(round(box.xyxy.numpy()[0][3]))
+                
+                    labels.append((classe, x1, y1, x2, y2))
                 
     except Exception as e:
         print(f"WARNING: {e}")

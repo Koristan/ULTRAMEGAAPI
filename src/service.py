@@ -62,10 +62,7 @@ async def inference(image: UploadFile = File(...)) -> JSONResponse:
     """
     image_content = await image.read()
     cv_image = np.array(Image.open(io.BytesIO(image_content)))
-
-    height = cv_image.shape[0]
-    width = cv_image.shape[1]
-
+    
     logger.info(f"Картиночка приянята... обрабатываю...")
     try:
         labels = get_boxes(cv_image)
