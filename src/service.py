@@ -12,6 +12,8 @@ from fastapi import FastAPI, File, UploadFile, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from PIL import Image
+from norfair import Detection, Tracker
+from norfair.camera_motion import MotionEstimator
 
 # project
 from src.datacontract.service_config import ServiceConfig
@@ -62,12 +64,19 @@ async def inference(image: UploadFile = File(...)) -> JSONResponse:
     """
     image_content = await image.read()
     cv_image = np.array(Image.open(io.BytesIO(image_content)))
-    
     logger.info(f"Картиночка приянята... обрабатываю...")
+    
+    motion_estimator = MotionEstimator()
+    tracker = Tracker(distance_function="euclidean", distance_threshold=100)
+    
+    print(tracker)
+    
     try:
-        labels = get_boxes(cv_image)
+        labels = get_boxes(cv_image, tracker, motion_estimator)
         
         service_output_json = list()
+        
+        
         
         for label in labels:     
             

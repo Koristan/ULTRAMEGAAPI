@@ -1,29 +1,36 @@
 import shutil
 import numpy as np
 from ultralytics import YOLO
-from PIL import Image
+
+from norfair.camera_motion import MotionEstimator
 
 # Load a model
 model = YOLO('src/best.pt')  # pretrained YOLOv8n model
 # Run batched inference on a list of images
 
-def get_boxes (image):
+def get_boxes (image, tracker, motion_estimator):
     
     labels = list()
     
-    results = model([image])
-    # track_ids = results[0].boxes.id
     
-    # print(track_ids)
+    results = model.track([image], persist=True)
+    detections = detector(image)
+    coord_transformations = motion_estimator.update(image)
+    tracked_objects = tracker.update(detections=detections)
+    
+    print('GOVNO\n\n' + tracked_objects)
+    
     try:
         for r in results:
             boxes = r.boxes
             names = r.names
-            for box in boxes:           
+
+            for box in boxes:         
                 
                 acc = box.conf.item()
+
                 
-                if (acc > 0.7):
+                if (acc > 0.5):
                     classe = names[int(round(box.cls.item()))]
                     x1 = int(round(box.xyxy.numpy()[0][0]))
                     y1 = int(round(box.xyxy.numpy()[0][1]))
