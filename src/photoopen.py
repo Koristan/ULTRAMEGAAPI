@@ -1,36 +1,50 @@
 import shutil
 import numpy as np
-from ultralytics import YOLO
+from norfair import Detection
 
-from norfair.camera_motion import MotionEstimator
-
-# Load a model
-model = YOLO('src/best.pt')  # pretrained YOLOv8n model
-# Run batched inference on a list of images
-
-def get_boxes (image, tracker, motion_estimator):
+def get_boxes (image, model, tracker, motion_estimator):
     
     labels = list()
     
+    results = model(image)
+    norfair_detections = list()
     
-    results = model.track([image], persist=True)
-    detections = detector(image)
     coord_transformations = motion_estimator.update(image)
-    tracked_objects = tracker.update(detections=detections)
-    
-    print('GOVNO\n\n' + tracked_objects)
-    
+
     try:
         for r in results:
             boxes = r.boxes
-            names = r.names
-
+            names = r.names  
+            
             for box in boxes:         
                 
                 acc = box.conf.item()
-
                 
                 if (acc > 0.5):
+                    
+                    bbox = np.array(
+                    [
+                        [box.xyxy.numpy()[0][0], box.xyxy.numpy()[0][1]],
+                        [box.xyxy.numpy()[0][2], box.xyxy.numpy()[0][3]],
+                    ]
+                    )
+                    
+                    scores = np.array(
+                        [acc]
+                    )
+                    
+                    norfair_detections.append(
+                        Detection(
+                            points=bbox,
+                            scores=scores,
+                            label=int(box.cls.item()),
+                        )
+                    )
+                    tracked_objects = tracker.update(
+                        detections=norfair_detections,
+                        coord_transformations=coord_transformations # pass the estimation to the tracker
+                    )
+                    print(tracked_objects)
                     classe = names[int(round(box.cls.item()))]
                     x1 = int(round(box.xyxy.numpy()[0][0]))
                     y1 = int(round(box.xyxy.numpy()[0][1]))

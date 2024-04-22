@@ -12,19 +12,29 @@ from fastapi import FastAPI, File, UploadFile, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from PIL import Image
-from norfair import Detection, Tracker
-from norfair.camera_motion import MotionEstimator
 
 # project
 from src.datacontract.service_config import ServiceConfig
 from src.datacontract.service_output import ServiceOutput
 from src.photoopen import get_boxes
+from ultralytics import YOLO
+from norfair import Tracker
+from norfair.camera_motion import MotionEstimator
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(level=logging.INFO)
 
 app = FastAPI()
+
+model = YOLO('src/best.pt')
+
+tracker = Tracker(
+distance_function="frobenius",
+distance_threshold=200,
+)
+
+motion_estimator = MotionEstimator()
 
 service_config_path = ".\\src\\configs\\service_config.json"
 with open(service_config_path, "r") as service_config:
@@ -66,13 +76,9 @@ async def inference(image: UploadFile = File(...)) -> JSONResponse:
     cv_image = np.array(Image.open(io.BytesIO(image_content)))
     logger.info(f"Картиночка приянята... обрабатываю...")
     
-    motion_estimator = MotionEstimator()
-    tracker = Tracker(distance_function="euclidean", distance_threshold=100)
-    
-    print(tracker)
-    
+
     try:
-        labels = get_boxes(cv_image, tracker, motion_estimator)
+        labels = get_boxes(cv_image, model, tracker, motion_estimator)
         
         service_output_json = list()
         
