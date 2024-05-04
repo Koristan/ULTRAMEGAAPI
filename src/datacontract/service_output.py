@@ -14,3 +14,5 @@ class ServiceOutput(pydantic.BaseModel):
     """Правый нижний угол"""
     classe: str = 'undefined'
     """Класс объекта"""
+    id: int = pydantic.Field(default=0)
+    """ID объекта"""

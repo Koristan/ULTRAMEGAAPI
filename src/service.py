@@ -21,11 +21,16 @@ from ultralytics import YOLO
 from norfair import Tracker
 from norfair.camera_motion import MotionEstimator
 
+from deep_sort_realtime.deepsort_tracker import DeepSort
+from ultralytics import YOLO
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(level=logging.INFO)
 
 app = FastAPI()
+tracker = DeepSort(max_age=50)
+model = YOLO('src/best.pt')
 
 model = YOLO('src/best.pt')
 
@@ -78,7 +83,11 @@ async def inference(image: UploadFile = File(...)) -> JSONResponse:
     
 
     try:
+<<<<<<< Updated upstream
         labels = get_boxes(cv_image, model, tracker, motion_estimator)
+=======
+        labels = get_boxes(cv_image, model, tracker)
+>>>>>>> Stashed changes
         
         service_output_json = list()
         
@@ -92,7 +101,8 @@ async def inference(image: UploadFile = File(...)) -> JSONResponse:
             service_output.x2 = label[3]
             service_output.y2 = label[4]
             service_output.classe = label[0]
-
+            service_output.id = label[5]
+            
             service_output_json.append(service_output.model_dump(mode="json"))
             
         return JSONResponse(content=jsonable_encoder(service_output_json))
