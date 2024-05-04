@@ -17,9 +17,6 @@ from PIL import Image
 from src.datacontract.service_config import ServiceConfig
 from src.datacontract.service_output import ServiceOutput
 from src.photoopen import get_boxes
-from ultralytics import YOLO
-from norfair import Tracker
-from norfair.camera_motion import MotionEstimator
 
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from ultralytics import YOLO
@@ -31,15 +28,6 @@ logger.setLevel(level=logging.INFO)
 app = FastAPI()
 tracker = DeepSort(max_age=50)
 model = YOLO('src/best.pt')
-
-model = YOLO('src/best.pt')
-
-tracker = Tracker(
-distance_function="frobenius",
-distance_threshold=200,
-)
-
-motion_estimator = MotionEstimator()
 
 service_config_path = ".\\src\\configs\\service_config.json"
 with open(service_config_path, "r") as service_config:
@@ -79,19 +67,12 @@ async def inference(image: UploadFile = File(...)) -> JSONResponse:
     """
     image_content = await image.read()
     cv_image = np.array(Image.open(io.BytesIO(image_content)))
-    logger.info(f"Картиночка приянята... обрабатываю...")
     
-
+    logger.info(f"Картиночка приянята... обрабатываю...")
     try:
-<<<<<<< Updated upstream
-        labels = get_boxes(cv_image, model, tracker, motion_estimator)
-=======
         labels = get_boxes(cv_image, model, tracker)
->>>>>>> Stashed changes
         
         service_output_json = list()
-        
-        
         
         for label in labels:     
             
